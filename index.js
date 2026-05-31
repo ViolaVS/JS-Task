@@ -12,13 +12,13 @@ class Rocket {
   }
 
   consumeFuel(amount) {
+    if (amount <= 0) {
+      throw new Error('Consuming amount must be more then 0');
+    }
+
     if (this.#fuelLevel - amount < 0) {
       const missingFuel = amount - this.#fuelLevel;
       throw new Error(`Not enough fuel in the tank. Missing ${missingFuel} fuel.`);
-    }
-
-    if (amount <= 0) {
-      throw new Error('Consuming amout must be more then 0');
     }
 
     this.#fuelLevel -= amount;
@@ -39,7 +39,7 @@ class Crew {
   constructor(maxSize = 7) {
     this.maxSize = maxSize;
   }
-  
+
   addMember({ name, role }) {
     if (this.#members.length >= this.maxSize) {
       throw new Error(`Crew is full!`);
@@ -72,26 +72,30 @@ class Crew {
 class Mission {
   #status = 'planned';
   static #counter = 1;
+  #log = [];
 
   constructor(name, rocket, payloadKg) {
     this.name = name;
     this.rocket = rocket;
     this.payloadKg = payloadKg;
     this.id = Mission.generateId();
+    this.addLog(this.status);
   }
 
-  set status(newStatus) {
-    this.#status = newStatus;
-  }
-
-  get status() {
-    return this.#status;
-  }
   static generateId() {
     let id = `MSN-${String(Mission.#counter).padStart(3, '0')}`;
     Mission.#counter++;
 
     return id;
+  }
+
+  get status() {
+    return this.#status;
+  }
+
+  set status(newStatus) {
+    this.#status = newStatus;
+    this.addLog(newStatus);
   }
 
   validate() {
@@ -109,9 +113,10 @@ class Mission {
   launch() {
     this.validate();
     this.rocket.consumeFuel(80);
-    let isSuccess = Math.random() < 0.7;
+    const isSuccess = Math.random() < 0.7;
 
-    this.#status = isSuccess ? 'success' : 'failed';
+    const nextStatus = isSuccess ? 'success' : 'failed';
+    this.status = nextStatus;
 
     return isSuccess
       ? `✅ ${this.id} ${this.name} launched successfully!`
@@ -119,7 +124,17 @@ class Mission {
   }
 
   toString() {
-    return ` ${this.id} '${this.name}' | Status: ${this.#status}`;
+    return `${this.id} '${this.name}' | Status: ${this.#status}`;
+  }
+
+  addLog(statusChange) {
+    const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const message = statusChange === 'planned' ? statusChange : `launched → ${statusChange}`;
+    this.#log.push(`[${timestamp}] ${message}`);
+  }
+
+  getLog() {
+    return this.#log.join('\n');
   }
 }
 
