@@ -158,13 +158,7 @@ class CrewedMission extends Mission {
   validate() {
     super.validate();
 
-    if (this.crew.membersAmount < 1) {
-      throw new Error('Crew is not ready: no members assigned');
-    }
-
-    if (!this.crew.hasCommander()) {
-      throw new Error('Crew is not ready: no Commander assigned');
-    }
+    this.crew.validate();
   }
 
   toString() {
