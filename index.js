@@ -67,6 +67,17 @@ class Crew {
 
     return `${title}${membersList}`;
   }
+  getManifest() {
+    const title = `=== Crew (${this.#members.length}/${this.maxSize}) ===`;
+
+    if (this.#members.length === 0) return title;
+
+    const membersList = this.#members
+      .map((member, index) => `${index + 1}. ${member.name} - ${member.role}`)
+      .join('\n');
+
+    return `${title}\n${membersList}`;
+  }
 }
 
 class Mission {
